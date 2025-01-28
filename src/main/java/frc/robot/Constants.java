@@ -43,9 +43,9 @@ public final class Constants
   {
 
     // Joystick Deadband
-    public static final double DEADBAND        = 0.1;
-    public static final double LEFT_Y_DEADBAND = 0.1;
-    public static final double RIGHT_X_DEADBAND = 0.1;
+    public static final double DEADBAND        = 0.2;//changed these from 0.1 to 0.2 because there was extra movement, could be joystick error?
+    public static final double LEFT_Y_DEADBAND = 0.2;
+    public static final double RIGHT_X_DEADBAND = 0.2;
     public static final double TURN_CONSTANT    = 6;
   }
 }

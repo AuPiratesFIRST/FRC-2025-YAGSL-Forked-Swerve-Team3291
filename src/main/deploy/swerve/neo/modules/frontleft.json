@@ -1,26 +1,30 @@
 {
   "drive": {
     "type": "sparkmax_neo",
-    "id": 9,
+    "id": 12,
     "canbus": null
   },
   "angle": {
     "type": "sparkmax_neo",
-    "id": 8,
+    "id": 13,
     "canbus": null
   },
   "encoder": {
     "type": "cancoder",
-    "id": 0,
+    "id": 1,
     "canbus": null
   },
   "inverted": {
     "drive": false,
     "angle": false
   },
+<<<<<<< Updated upstream
   "absoluteEncoderOffset": 284.326171875,
+=======
+  "absoluteEncoderOffset": 174.8144,
+>>>>>>> Stashed changes
   "location": {
     "front": 11.25,
-    "left": 11.25
+    "left": -11.25
   }
 }

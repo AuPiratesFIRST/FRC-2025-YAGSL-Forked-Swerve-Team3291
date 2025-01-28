@@ -18,7 +18,11 @@
     "drive": false,
     "angle": false
   },
+<<<<<<< Updated upstream
   "absoluteEncoderOffset": 325.01953125,
+=======
+  "absoluteEncoderOffset": 325.019531250,
+>>>>>>> Stashed changes
   "location": {
     "front": -11.25,
     "left": -11.25

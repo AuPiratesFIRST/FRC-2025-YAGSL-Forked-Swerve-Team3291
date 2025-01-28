@@ -6,8 +6,13 @@
     },
     "drive": {
       "gearRatio": 6.75,
+<<<<<<< Updated upstream
       "diameter": 4,
       "factor": 0
+=======
+      "diameter": 3.9965,
+      "factor": 1.86168453546
+>>>>>>> Stashed changes
     }
   },
   "currentLimit": {
