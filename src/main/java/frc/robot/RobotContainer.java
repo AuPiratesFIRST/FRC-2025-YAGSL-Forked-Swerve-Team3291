@@ -8,7 +8,6 @@ import java.io.File;
 
 import com.pathplanner.lib.auto.NamedCommands;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -166,9 +165,16 @@ public class RobotContainer
   public Command getAutonomousCommand()
   {
     // An example command will be run in autonomous
-    return drivebase.getAutonomousCommand("New Auto");
-  }
+    // return drivebase.getAutonomousCommand("New Auto");
+    double distanceInMeters = 2000.0; // 2km
 
+    // 2 minutes
+    double time = 2 * 60.0;
+    
+    double speedInMetersPerSecond = distanceInMeters / time;
+    return drivebase.driveToDistanceCommand(distanceInMeters, speedInMetersPerSecond);
+  }
+ 
   public void setMotorBrake(boolean brake)
   {
     drivebase.setMotorBrake(brake);
