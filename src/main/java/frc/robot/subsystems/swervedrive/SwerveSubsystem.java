@@ -46,13 +46,15 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.json.simple.parser.ParseException;
 import org.photonvision.targeting.PhotonPipelineResult;
+
+import frc.robot.subsystems.swervedrive.SwerveDrive;
+
 import swervelib.SwerveController;
-import swervelib.SwerveDrive;
 import swervelib.SwerveDriveTest;
 import swervelib.math.SwerveMath;
 import swervelib.parser.SwerveControllerConfiguration;
 import swervelib.parser.SwerveDriveConfiguration;
-import swervelib.parser.SwerveParser;
+import frc.robot.SwerveParser;
 import swervelib.telemetry.SwerveDriveTelemetry;
 import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
 
@@ -92,7 +94,7 @@ public class SwerveSubsystem extends SubsystemBase
                                                                                                Meter.of(4)),
                                                                              Rotation2d.fromDegrees(0)));
       // Alternative method if you don't want to supply the conversion factor via JSON files.
-       //swerveDrive = new SwerveParser(directory).createSwerveDrive(maximumSpeed, angleConversionFactor, driveConversionFactor);
+      // swerveDrive = new SwerveParser(directory).createSwerveDrive(4.4196, 16.8, 1.86);
     } catch (Exception e)
     {
       throw new RuntimeException(e);
@@ -144,7 +146,7 @@ public class SwerveSubsystem extends SubsystemBase
     if (visionDriveTest)
     {
       swerveDrive.updateOdometry();
-      vision.updatePoseEstimation(swerveDrive);
+      //vision.updatePoseEstimation(swerveDrive);
     }
   }
 
@@ -343,28 +345,28 @@ public class SwerveSubsystem extends SubsystemBase
    *
    * @return SysId Drive Command
    */
-  public Command sysIdDriveMotorCommand()
-  {
-    return SwerveDriveTest.generateSysIdCommand(
-        SwerveDriveTest.setDriveSysIdRoutine(
-            new Config(),
-            this, swerveDrive, 12, true),
-        3.0, 5.0, 3.0);
-  }
+  // public Command sysIdDriveMotorCommand()
+  // {
+  //   return SwerveDriveTest.generateSysIdCommand(
+  //       SwerveDriveTest.setDriveSysIdRoutine(
+  //           new Config(),
+  //           this, swerveDrive, 12, true),
+  //       3.0, 5.0, 3.0);
+  // }
 
   /**
    * Command to characterize the robot angle motors using SysId
    *
    * @return SysId Angle Command
    */
-  public Command sysIdAngleMotorCommand()
-  {
-    return SwerveDriveTest.generateSysIdCommand(
-        SwerveDriveTest.setAngleSysIdRoutine(
-            new Config(),
-            this, swerveDrive),
-        3.0, 5.0, 3.0);
-  }
+  //public Command sysIdAngleMotorCommand()
+  // {
+  //   return SwerveDriveTest.generateSysIdCommand(
+  //       SwerveDriveTest.setAngleSysIdRoutine(
+  //           new Config(),
+  //           this, swerveDrive),
+  //       3.0, 5.0, 3.0);
+  // }
 
   /**
    * Returns a Command that centers the modules of the SwerveDrive subsystem.
