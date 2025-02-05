@@ -361,7 +361,7 @@ public class SwerveModule {
    * @param force Disables optimizations that prevent movement in the angle motor and forces the
    *     desired state onto the swerve module.
    */
-  public void setDesiredState(SwerveModuleState desiredState, boolean isOpenLoop, boolean force) {
+  public void setDesiredState(SwerveModuleState desiredState, boolean isOpenLoop, boolean force, int moduleNumber) {
 
     desiredState.optimize(Rotation2d.fromDegrees(getAbsolutePosition()));
 
@@ -383,7 +383,7 @@ public class SwerveModule {
         desiredState,
         isOpenLoop,
         driveMotorFeedforward.calculateWithVelocities(
-            curVelocityMetersPerSecond, nextVelocityMetersPerSecond));
+            curVelocityMetersPerSecond, nextVelocityMetersPerSecond), moduleNumber);
   }
 
   /**
@@ -396,14 +396,22 @@ public class SwerveModule {
    * @param driveFeedforwardVoltage Drive motor controller feedforward as a voltage.
    */
   public void setDesiredState(
-      SwerveModuleState desiredState, boolean isOpenLoop, double driveFeedforwardVoltage) {
+      SwerveModuleState desiredState, boolean isOpenLoop, double driveFeedforwardVoltage, int moduleNumber) {
+
+    double reduceVoltage;
+    if (moduleNumber == 1 || moduleNumber == 3) {
+      reduceVoltage = 0.5;
+    }
+    else {
+      reduceVoltage = 0;
+    }
 
     if (isOpenLoop) {
       double percentOutput =
           desiredState.speedMetersPerSecond / maxDriveVelocity.in(MetersPerSecond);
-      driveMotor.setVoltage(percentOutput * 12);
+      driveMotor.setVoltage((percentOutput * 12)/reduceVoltage);
     } else {
-      driveMotor.setReference(desiredState.speedMetersPerSecond, driveFeedforwardVoltage);
+      driveMotor.setReference(desiredState.speedMetersPerSecond, driveFeedforwardVoltage/reduceVoltage);
     }
 
     // Prevent module rotation if angle is the same as the previous angle.

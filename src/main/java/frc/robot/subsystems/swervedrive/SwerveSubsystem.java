@@ -48,12 +48,10 @@ import org.json.simple.parser.ParseException;
 import org.photonvision.targeting.PhotonPipelineResult;
 
 import frc.robot.subsystems.swervedrive.SwerveDrive;
-
-import swervelib.SwerveController;
 import swervelib.SwerveDriveTest;
-import swervelib.math.SwerveMath;
-import swervelib.parser.SwerveControllerConfiguration;
-import swervelib.parser.SwerveDriveConfiguration;
+import frc.robot.subsystems.swervedrive.SwerveMath;
+import frc.robot.subsystems.swervedrive.SwerveControllerConfiguration;
+import frc.robot.subsystems.swervedrive.SwerveDriveConfiguration;
 import frc.robot.SwerveParser;
 import swervelib.telemetry.SwerveDriveTelemetry;
 import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;

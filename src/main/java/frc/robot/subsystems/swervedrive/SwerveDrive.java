@@ -57,16 +57,15 @@ import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.ironmaple.simulation.drivesims.configs.DriveTrainSimulationConfig;
 import org.ironmaple.simulation.drivesims.configs.SwerveModuleSimulationConfig;
 
-import swervelib.SwerveController;
-import swervelib.SwerveModule;
+import frc.robot.subsystems.swervedrive.SwerveModule;
 import swervelib.encoders.CANCoderSwerve;
 import swervelib.imu.Pigeon2Swerve;
 import swervelib.imu.SwerveIMU;
-import swervelib.math.SwerveMath;
+import frc.robot.subsystems.swervedrive.SwerveMath;
+import frc.robot.subsystems.swervedrive.SwerveDriveConfiguration;
 import swervelib.motors.TalonFXSwerve;
 import swervelib.parser.Cache;
-import swervelib.parser.SwerveControllerConfiguration;
-import swervelib.parser.SwerveDriveConfiguration;
+import frc.robot.subsystems.swervedrive.SwerveControllerConfiguration;
 import swervelib.simulation.SwerveIMUSimulation;
 import swervelib.telemetry.SwerveDriveTelemetry;
 import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
@@ -110,7 +109,7 @@ public class SwerveDrive {
   /** Field object. */
   public Field2d field = new Field2d();
   /** Swerve controller for controlling heading of the robot. */
-  public SwerveController swerveController;
+  public frc.robot.subsystems.swervedrive.SwerveController swerveController;
   /**
    * Correct chassis velocity in {@link SwerveDrive#drive(Translation2d, double, boolean, boolean)}
    * using 254's correction.
@@ -654,7 +653,7 @@ public class SwerveDrive {
 
     // Sets states
     for (SwerveModule module : swerveModules) {
-      module.setDesiredState(desiredStates[module.moduleNumber], isOpenLoop, false);
+      module.setDesiredState(desiredStates[module.moduleNumber], isOpenLoop, false, module.moduleNumber);
     }
   }
 
@@ -677,7 +676,7 @@ public class SwerveDrive {
 
     // Sets states
     for (SwerveModule module : swerveModules) {
-      module.setDesiredState(desiredStates[module.moduleNumber], isOpenLoop, false);
+      module.setDesiredState(desiredStates[module.moduleNumber], isOpenLoop, false, module.moduleNumber);
     }
   }
 
@@ -720,7 +719,7 @@ public class SwerveDrive {
               // motorVelocity / gearRatio
               // motorAngularVelocity = linearVelocity / wheelRadius * gearRatio
               desiredGroundSpeedMPS / wheelRadiusMeters * driveGearRatio);
-      module.setDesiredState(states[module.moduleNumber], false, feedforwardVoltage);
+      module.setDesiredState(states[module.moduleNumber], false, feedforwardVoltage, module.moduleNumber);
     }
   }
 
@@ -999,7 +998,7 @@ public class SwerveDrive {
       if (SwerveDriveTelemetry.verbosity.ordinal() >= TelemetryVerbosity.INFO.ordinal()) {
         SwerveDriveTelemetry.desiredStatesObj[swerveModule.moduleNumber] = desiredState;
       }
-      swerveModule.setDesiredState(desiredState, false, true);
+      swerveModule.setDesiredState(desiredState, false, true, swerveModule.moduleNumber);
     }
 
     // Update kinematics because we are not using setModuleStates
