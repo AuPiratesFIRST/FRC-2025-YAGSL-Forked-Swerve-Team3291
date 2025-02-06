@@ -20,6 +20,9 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.commands.IntakeMotor.EjectCMD;
+import frc.robot.commands.IntakeMotor.IntakeMotorCMD;
+import frc.robot.subsystems.intake.IntakeMotorSubsystem;
 import frc.robot.subsystems.swervedrive.SwerveSubsystem;
 import frc.robot.SwerveInputStream;
 
@@ -36,6 +39,10 @@ public class RobotContainer
   // The robot's subsystems and commands are defined here...
   private final SwerveSubsystem       drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
                                                                                 "swerve/neo"));
+  private final IntakeMotorSubsystem intakeMotorSubsystem = new IntakeMotorSubsystem();
+
+  private final IntakeMotorCMD intakeMotorCMD = new IntakeMotorCMD(intakeMotorSubsystem);
+  private final EjectCMD ejectCMD = new EjectCMD(intakeMotorSubsystem);
 
   /**
    * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular velocity.

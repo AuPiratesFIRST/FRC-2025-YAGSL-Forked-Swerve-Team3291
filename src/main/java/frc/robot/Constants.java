@@ -50,5 +50,47 @@ public final class Constants
     public static final double TURN_CONSTANT    = 6;
   }
 
+  public static class intake {
+    public static final double angleDeadband = 5;
+
+    public static final double kLauncherSubMinOutput = 0;
+    public static final double kLauncherSubMaxOutput = 1;
+
+    public static final int kLauncherSubLeftMotorId = 18;
+    public static final int kLauncherSubRightMotorId = 14;
+
+    public static final double kLauncherSubP = 0.00005;
+    public static final double kLauncherSubI = 0.0;
+    public static final double kLauncherSubD = 0.0;
+    public static final double kLauncherSubFF = 0.0002;
+
+    public static class intakePID {
+    public static final double kp = 0.1;
+    public static final double ki = 0.0;
+    public static final double kd = 0.0;
+    public static final double kcos = 0.5;
+    }
+
+    //ids
+    public static final int encoderID = 0; //Changed due to change
+    public static final int IntakeID = 21;//21
+    public static final int PivotID = 19;//19 
+    public static final int intakeLimitSwitchID = 9;
+
+    public static final double k_pivotEncoderOffset = 230;
+
+    //angles
+    public static final double groundAngle = 167 - -35;//doesn't like 0
+    public static final double stowAngle = 167 - 164;
+    public static final double sourceAngle = 167 - 55;
+    public static final double ampAngle = 167 - 95;
+
+    public static final double maxPivotVoltage = 5;
+
+    public static final double ejectSpeed = 0.5 * 5000;
+    public static final double intakeSpeed = 0.7 * 5000;
+    public static final int launchNoteTimeInSecs = 1;
+    
+  }
   
 }
