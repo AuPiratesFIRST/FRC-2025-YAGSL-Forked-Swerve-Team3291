@@ -17,6 +17,7 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Constants;
 import swervelib.encoders.SparkMaxEncoderSwerve;
 import swervelib.encoders.SwerveAbsoluteEncoder;
 import swervelib.math.SwerveMath;
@@ -400,18 +401,18 @@ public class SwerveModule {
 
     double reduceVoltage;
     if (moduleNumber == 1 || moduleNumber == 3) {
-      reduceVoltage = 0.5;
+      reduceVoltage = Constants.RIGHT_SIDE_REDUCTION;
     }
     else {
-      reduceVoltage = 0;
+      reduceVoltage = 1;
     }
 
     if (isOpenLoop) {
       double percentOutput =
           desiredState.speedMetersPerSecond / maxDriveVelocity.in(MetersPerSecond);
-      driveMotor.setVoltage((percentOutput * 12)/reduceVoltage);
+      driveMotor.setVoltage((percentOutput * 12)*reduceVoltage);
     } else {
-      driveMotor.setReference(desiredState.speedMetersPerSecond, driveFeedforwardVoltage/reduceVoltage);
+      driveMotor.setReference(desiredState.speedMetersPerSecond*reduceVoltage, driveFeedforwardVoltage*reduceVoltage);
     }
 
     // Prevent module rotation if angle is the same as the previous angle.
