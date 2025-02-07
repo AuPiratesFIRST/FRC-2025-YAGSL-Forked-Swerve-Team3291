@@ -47,12 +47,13 @@ import java.util.function.Supplier;
 import org.json.simple.parser.ParseException;
 import org.photonvision.targeting.PhotonPipelineResult;
 
-import frc.robot.subsystems.swervedrive.SwerveDrive;
+import swervelib.SwerveController;
+import swervelib.SwerveDrive;
 import swervelib.SwerveDriveTest;
-import frc.robot.subsystems.swervedrive.SwerveMath;
-import frc.robot.subsystems.swervedrive.SwerveControllerConfiguration;
-import frc.robot.subsystems.swervedrive.SwerveDriveConfiguration;
-import frc.robot.SwerveParser;
+import swervelib.math.SwerveMath;
+import swervelib.parser.SwerveControllerConfiguration;
+import swervelib.parser.SwerveDriveConfiguration;
+import swervelib.parser.SwerveParser;
 import swervelib.telemetry.SwerveDriveTelemetry;
 import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
 
@@ -92,7 +93,7 @@ public class SwerveSubsystem extends SubsystemBase
                                                                                                Meter.of(4)),
                                                                              Rotation2d.fromDegrees(0)));
       // Alternative method if you don't want to supply the conversion factor via JSON files.
-      // swerveDrive = new SwerveParser(directory).createSwerveDrive(4.4196, 16.8, 1.86);
+      // swerveDrive = new SwerveParser(directory).createSwerveDrive(maximumSpeed, angleConversionFactor, driveConversionFactor);
     } catch (Exception e)
     {
       throw new RuntimeException(e);
@@ -101,7 +102,7 @@ public class SwerveSubsystem extends SubsystemBase
     swerveDrive.setCosineCompensator(false);//!SwerveDriveTelemetry.isSimulation); // Disables cosine compensation for simulations since it causes discrepancies not seen in real life.
     swerveDrive.setAngularVelocityCompensation(true,
                                                true,
-                                               0.1); //Correct for skew that gets worse as angular velocity increases. Start with a coefficient of 0.1.
+                                               -0.001); //Correct for skew that gets worse as angular velocity increases. Start with a coefficient of 0.1.
     swerveDrive.setModuleEncoderAutoSynchronize(false,
                                                 1); // Enable if you want to resynchronize your absolute encoders and motor encoders periodically when they are not moving.
 //    swerveDrive.pushOffsetsToEncoders(); // Set the absolute encoder to be used over the internal encoder and push the offsets onto it. Throws warning if not possible
@@ -144,7 +145,7 @@ public class SwerveSubsystem extends SubsystemBase
     if (visionDriveTest)
     {
       swerveDrive.updateOdometry();
-      //vision.updatePoseEstimation(swerveDrive);
+      vision.updatePoseEstimation(swerveDrive);
     }
   }
 
@@ -343,28 +344,28 @@ public class SwerveSubsystem extends SubsystemBase
    *
    * @return SysId Drive Command
    */
-  // public Command sysIdDriveMotorCommand()
-  // {
-  //   return SwerveDriveTest.generateSysIdCommand(
-  //       SwerveDriveTest.setDriveSysIdRoutine(
-  //           new Config(),
-  //           this, swerveDrive, 12, true),
-  //       3.0, 5.0, 3.0);
-  // }
+  public Command sysIdDriveMotorCommand()
+  {
+    return SwerveDriveTest.generateSysIdCommand(
+        SwerveDriveTest.setDriveSysIdRoutine(
+            new Config(),
+            this, swerveDrive, 12.0),
+        3.0, 5.0, 3.0);
+  }
 
   /**
    * Command to characterize the robot angle motors using SysId
    *
    * @return SysId Angle Command
    */
-  //public Command sysIdAngleMotorCommand()
-  // {
-  //   return SwerveDriveTest.generateSysIdCommand(
-  //       SwerveDriveTest.setAngleSysIdRoutine(
-  //           new Config(),
-  //           this, swerveDrive),
-  //       3.0, 5.0, 3.0);
-  // }
+  public Command sysIdAngleMotorCommand()
+  {
+    return SwerveDriveTest.generateSysIdCommand(
+        SwerveDriveTest.setAngleSysIdRoutine(
+            new Config(),
+            this, swerveDrive),
+        3.0, 5.0, 3.0);
+  }
 
   /**
    * Returns a Command that centers the modules of the SwerveDrive subsystem.
