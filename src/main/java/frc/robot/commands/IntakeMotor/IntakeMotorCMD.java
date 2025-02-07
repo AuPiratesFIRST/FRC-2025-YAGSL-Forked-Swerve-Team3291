@@ -33,7 +33,7 @@ public class IntakeMotorCMD extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-      intakeMotorSubsystem.moveIntakeMotor(Constants.intake.intakeSpeed);
+      intakeMotorSubsystem.moveIntakeMotor(Constants.Intake.intakeSpeed);
 
     // if (!intakeSubsystem.getIntakeHasNote()) {
     // intakeMotorSubsystem.moveIntakeMotor(-1 * Constants.intake.intakeSpeed);

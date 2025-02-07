@@ -14,7 +14,7 @@ import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.Constants.intake;
+import frc.robot.Constants.Intake;
 
 public class IntakeMotorSubsystem extends SubsystemBase {
 
@@ -26,13 +26,13 @@ public class IntakeMotorSubsystem extends SubsystemBase {
   public RelativeEncoder IntakeMotorEncoder;
 
   public SlewRateLimiter mSpeedLimiter = new SlewRateLimiter(1000);
-  public double intakeSpeed = Constants.intake.ejectSpeed;
+  public double IntakeSpeed = Constants.Intake.ejectSpeed;
   public SparkMaxConfig config;
 
   public IntakeMotorSubsystem() {
-    Preferences.initDouble("intakeSpeed", intakeSpeed);
+    Preferences.initDouble("IntakeSpeed", IntakeSpeed);
 
-    IntakeMotorMotor = new SparkMax(Constants.intake.IntakeID, MotorType.kBrushless);
+    IntakeMotorMotor = new SparkMax(Constants.Intake.IntakeID, MotorType.kBrushless);
    // IntakeMotorMotor.restoreFactoryDefaults();
 
     IntakeMotorPID = IntakeMotorMotor.getClosedLoopController();
@@ -40,12 +40,12 @@ public class IntakeMotorSubsystem extends SubsystemBase {
     config
         .inverted(true)
         .idleMode(IdleMode.kBrake);
-    config.closedLoop.p(Constants.intake.kLauncherSubP);
-    config.closedLoop.i(Constants.intake.kLauncherSubI);
-    config.closedLoop.d(Constants.intake.kLauncherSubD);
-    config.closedLoop.pidf(Constants.intake.kLauncherSubP, Constants.intake.kLauncherSubI, 
-    Constants.intake.kLauncherSubD, Constants.intake.kLauncherSubFF);
-    config.closedLoop.outputRange(Constants.intake.kLauncherSubMinOutput, Constants.intake.kLauncherSubMaxOutput);
+    config.closedLoop.p(Constants.Intake.kLauncherSubP);
+    config.closedLoop.i(Constants.Intake.kLauncherSubI);
+    config.closedLoop.d(Constants.Intake.kLauncherSubD);
+    config.closedLoop.pidf(Constants.Intake.kLauncherSubP, Constants.Intake.kLauncherSubI, 
+    Constants.Intake.kLauncherSubD, Constants.Intake.kLauncherSubFF);
+    config.closedLoop.outputRange(Constants.Intake.kLauncherSubMinOutput, Constants.Intake.kLauncherSubMaxOutput);
     IntakeMotorMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     IntakeMotorEncoder = IntakeMotorMotor.getEncoder();
 

@@ -12,7 +12,9 @@ import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
+import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.Preferences;
@@ -32,159 +34,147 @@ public class ElevatorSubsystem extends SubsystemBase {
   public PIDController pidController;
   public SparkMax elevatorMotorLeader;
   public SparkMax elevatorMotorFollower;
-
+  public TrapezoidProfile trapezoidProfile;
+  public ElevatorFeedforward elevatorFeedforward;
+  public TrapezoidProfile.State goal;
+  public TrapezoidProfile.State setpoint;
 
  
-  public enum PivotTarget {
+  public enum FloorTarget {
     NONE,
-    GROUND,
-    SOURCE,
-    AMP,
-    STOW
+    GROUND_FLOOR,
+    TOP_FLOOR
   }
 
   // Input: Desired state
-  public PivotTarget pivot_target = PivotTarget.STOW;
+  public FloorTarget floor_target = FloorTarget.GROUND_FLOOR;
 
   // Output: Motor set values
 
-  private double intakekp = Constants.intake.intakePID.kp;
-  private double intakeki = Constants.intake.intakePID.ki;
-  private double intakekd = Constants.intake.intakePID.kd;
+  private double elevatorkp = Constants.Elevator.PID.kp;
+  private double elevatorki = Constants.Elevator.PID.ki;
+  private double elevatorkd = Constants.Elevator.PID.kd;
 
 
   SparkMaxConfig followerConfig;
 
   public ElevatorSubsystem() {
-    Preferences.initDouble("intakekp", intakekp);
-    Preferences.initDouble("intakeki", intakeki);
-    Preferences.initDouble("intakekd", intakekd);
+    
 
-    this.elevatorEncoder = new DutyCycleEncoder(Constants.intake.encoderID);
-    this.elevatorLimitSwitch = new DigitalInput(Constants.intake.intakeLimitSwitchID);
+    Preferences.initDouble("elevatorkp", elevatorkp);
+    Preferences.initDouble("elevatorki", elevatorki);
+    Preferences.initDouble("elevatorkd", elevatorkd);
+
+    this.elevatorEncoder = new DutyCycleEncoder(Constants.Elevator.encoderID);
+    this.elevatorLimitSwitch = new DigitalInput(Constants.Elevator.topLimitSwitchID);
 
 
-    this.pidController = new PIDController(Constants.intake.intakePID.kp, Constants.intake.intakePID.ki, Constants.intake.intakePID.kd);
-    // this.pidController.setD(Constants.intake.intakePID.kd);
+    this.pidController = new PIDController(Constants.Elevator.PID.kp, Constants.Elevator.PID.ki, Constants.Elevator.PID.kd);
+    // this.pidController.setD(Constants.Elevator.intakePID.kd);
     // SendableRegistry.addChild("D", d);
-    // this.pidController.setI(Constants.intake.intakePID.ki);
-    // this.pidController.setP(Constants.intake.intakePID.kp);
+    // this.pidController.setI(Constants.Elevator.intakePID.ki);
+    // this.pidController.setP(Constants.Elevator.intakePID.kp);
 
 
     this.pidController.enableContinuousInput(0, 360);
    
 
 
-    this.elevatorMotorLeader = new SparkMax(Constants.intake.PivotID, SparkLowLevel.MotorType.kBrushless);
-    this.elevatorMotorFollower = new SparkMax(Constants.intake.PivotID, SparkLowLevel.MotorType.kBrushless);
+    this.elevatorMotorLeader = new SparkMax(Constants.Elevator.motorFollowerID, SparkLowLevel.MotorType.kBrushless);
+    this.elevatorMotorFollower = new SparkMax(Constants.Elevator.motorLeadID, SparkLowLevel.MotorType.kBrushless);
     followerConfig = new SparkMaxConfig();
     followerConfig.follow(elevatorMotorLeader);
+    
     this.elevatorMotorFollower.configure(followerConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+
+    this.trapezoidProfile = new TrapezoidProfile(
+      new TrapezoidProfile.Constraints(Constants.Elevator.maxVelocity, Constants.Elevator.maxAcceleration)
+      );
+
+    this.goal = new TrapezoidProfile.State();
+    this.setpoint = new TrapezoidProfile.State();
+
+    this.elevatorFeedforward = new ElevatorFeedforward(Constants.Elevator.ks, Constants.Elevator.kg, Constants.Elevator.kv, Constants.Elevator.ka);
+    this.trapezoidProfile.calculate(elevatorkd, setpoint, goal);//move this immediately
+    goal = new TrapezoidProfile.State(5, 0);
+    elevatorMotorLeader.setSetPoint(
+        elevatorEncoder.get(),
+        m_setpoint.position,
+        m_feedforward.calculate(m_setpoint.velocity) / 12.0);
   }
    
   public void loadPreferences() {
-    if (Preferences.getDouble("intakekp", intakekp) != intakekp) {
-      intakekp = Preferences.getDouble("intakekp", intakekp);
-      pidController.setP(intakekp);
+    if (Preferences.getDouble("elevatorkp", elevatorkp) != elevatorkp) {
+      elevatorkp = Preferences.getDouble("elevatorkp", elevatorkp);
+      pidController.setP(elevatorkp);
     }
-    if (Preferences.getDouble("intakeki", intakeki) != intakeki) {
-      intakekp = Preferences.getDouble("intakeki", intakeki);
-      pidController.setI(intakeki);
+    if (Preferences.getDouble("elevatorki", elevatorki) != elevatorki) {
+      elevatorkp = Preferences.getDouble("elevatorki", elevatorki);
+      pidController.setI(elevatorki);
     }
-    if (Preferences.getDouble("intakekd", intakekd) != intakekd) {
-      intakekp = Preferences.getDouble("intakekd", intakekd);
-      pidController.setD(intakekd);
+    if (Preferences.getDouble("elevatorkd", elevatorkd) != elevatorkd) {
+      elevatorkp = Preferences.getDouble("elevatorkd", elevatorkd);
+      pidController.setD(elevatorkd);
     }
   }
 
-  public double giveVoltage(double pivot_angle, double current_angle) {
-    // Pivot control
+  public double giveVoltage(double floor_angle, double current_angle) {
+    // Floor control
     SmartDashboard.putNumber("originalAngle", current_angle);
    
     //double angle = Math.abs(360 - current_angle); //reverses it
     double angle = current_angle;
     SmartDashboard.putNumber("updatedAngle", angle);
 
-    double intake_pivot_voltage = pidController.calculate(angle, pivot_angle);
+    double intake_floor_voltage = pidController.calculate(angle, floor_angle);
 
-    // If the pivot is at exactly 0.0, it's probably not connected, so disable it
-    SmartDashboard.putNumber("pid output", intake_pivot_voltage);
-    System.out.println("error: " + intake_pivot_voltage);
+    // If the Floor is at exactly 0.0, it's probably not connected, so disable it
+    SmartDashboard.putNumber("pid output", intake_floor_voltage);
+    System.out.println("error: " + intake_floor_voltage);
 
-    //double adjustedIntakePivotVoltage = 10 - Math.abs(intake_pivot_voltage);
-    double adjustedIntakePivotVoltage = intake_pivot_voltage; //error reversed for voltage
+    //double adjustedIntakefloorVoltage = 10 - Math.abs(intake_floor_voltage);
+    double adjustedIntakeFloorVoltage = intake_floor_voltage; //error reversed for voltage
     if (elevatorEncoder.get() == 0.0) {
-      adjustedIntakePivotVoltage = 0.0;
+      adjustedIntakeFloorVoltage = 0.0;
     }
-    if (adjustedIntakePivotVoltage > Constants.intake.maxPivotVoltage) {
-      adjustedIntakePivotVoltage = Constants.intake.maxPivotVoltage;
+    if (adjustedIntakeFloorVoltage > Constants.Elevator.maxVoltage) {
+      adjustedIntakeFloorVoltage = Constants.Elevator.maxVoltage;
     }
-    if (adjustedIntakePivotVoltage < -Constants.intake.maxPivotVoltage) {
-      adjustedIntakePivotVoltage = -Constants.intake.maxPivotVoltage;
+    if (adjustedIntakeFloorVoltage < -Constants.Elevator.maxVoltage) {
+      adjustedIntakeFloorVoltage = -Constants.Elevator.maxVoltage;
     }
-   if (!ampAtAngle() && !sourceAtAngle() && !stowAtAngle() && !groundAtAngle()) {
-    //adjustedIntakePivotVoltage += Math.cos(167 - angle) * Constants.intake.intakePID.kcos; //feedforward
-   }
-    System.out.println("final voltage: " + adjustedIntakePivotVoltage);
-    return adjustedIntakePivotVoltage;
+
+    System.out.println("final voltage: " + adjustedIntakeFloorVoltage);
+    return adjustedIntakeFloorVoltage;
   }
  
   public void stopIntake() {
     elevatorMotorLeader.set(0);
   }
 
-  public double pivotTargetToAngle(PivotTarget target) {
+  public double floorTargetToAngle(FloorTarget target) {
     switch (target) {
-      case GROUND:
-        return Constants.intake.groundAngle;
-      case SOURCE:
-        return Constants.intake.sourceAngle;
-      case AMP:
-        return Constants.intake.ampAngle;
-      case STOW:
-        return Constants.intake.stowAngle;
+      case GROUND_FLOOR:
+        return Constants.Elevator.groundFloor;
+      case TOP_FLOOR:
+        return Constants.Elevator.topFloor;
       default:
         // "Safe" default
         return 180;
     }
   }
 
-
-  public double getCurrentAngle() {
-    double value = elevatorEncoder.get();
-    value *= 360;
-    value += Constants.intake.k_pivotEncoderOffset;
-    if (value > 360) {
-      value %= 360;
-    }
-    return value;
-  }
-
-   //check if at angle
-  public boolean ampAtAngle() {
+   //check if at floor
+  public boolean elevatorAtGroundFloor() {
     boolean value = false;
-    if (getCurrentAngle() < Constants.intake.ampAngle + Constants.intake.angleDeadband && getCurrentAngle() > Constants.intake.ampAngle - Constants.intake.angleDeadband) {
+    if (elevatorEncoder.get() < Constants.Elevator.groundFloor + Constants.Elevator.groundFloor && elevatorEncoder.get() > Constants.Elevator.groundFloor - Constants.Elevator.groundFloor) {
       value = true;
     }
     return value;
   }
-  public boolean groundAtAngle() {
+  public boolean elevatorAtTopFloor() {
     boolean value = false;
-    if (getCurrentAngle() < Constants.intake.groundAngle + Constants.intake.angleDeadband && getCurrentAngle() > Constants.intake.groundAngle - Constants.intake.angleDeadband) {
-      value = true;
-    }
-    return value;
-  }
-  public boolean stowAtAngle() {
-    boolean value = false;
-    if (getCurrentAngle() < Constants.intake.stowAngle + Constants.intake.angleDeadband && getCurrentAngle() > Constants.intake.stowAngle - Constants.intake.angleDeadband) {
-      value = true;
-    }
-    return value;
-  }
-  public boolean sourceAtAngle() {
-    boolean value = false;
-    if (getCurrentAngle() < Constants.intake.sourceAngle + Constants.intake.angleDeadband && getCurrentAngle() > Constants.intake.sourceAngle - Constants.intake.angleDeadband) {
+    if (elevatorEncoder.get() < Constants.Elevator.topFloor + Constants.Elevator.topFloor && elevatorEncoder.get() > Constants.Elevator.topFloor - Constants.Elevator.topFloor) {
       value = true;
     }
     return value;
@@ -195,16 +185,16 @@ public class ElevatorSubsystem extends SubsystemBase {
     //  if (getIntakeHasNote()) {
     //   goToStow();
     // }
-    pivot_target = PivotTarget.GROUND;
-    double pivot_angle = Constants.intake.groundAngle;
-    System.out.println("stow angle target: " + pivot_angle);
-    System.out.println("final voltage: " + giveVoltage(pivot_angle, getCurrentAngle()) + "\n\n");
-    double voltage = giveVoltage(pivot_angle, getCurrentAngle());
-    if (getCurrentAngle() < 100 && voltage == -Constants.intake.maxPivotVoltage) {
-      elevatorMotorLeader.setVoltage(Constants.intake.maxPivotVoltage);
+    floor_target = FloorTarget.GROUND_FLOOR;
+    double floor_angle = Constants.Elevator.groundFloor;
+    System.out.println("stow angle target: " + floor_angle);
+    System.out.println("final voltage: " + giveVoltage(floor_angle, elevatorEncoder.get()) + "\n\n");
+    double voltage = giveVoltage(floor_angle, elevatorEncoder.get());
+    if (elevatorEncoder.get() < 100 && voltage == -Constants.Elevator.maxVoltage) {
+      elevatorMotorLeader.setVoltage(Constants.Elevator.maxVoltage);
     }
-    else if (getCurrentAngle() > 300) {
-      elevatorMotorLeader.setVoltage(-Constants.intake.maxPivotVoltage);
+    else if (elevatorEncoder.get() > 300) {
+      elevatorMotorLeader.setVoltage(-Constants.Elevator.maxVoltage);
 
 
     } else {
@@ -216,45 +206,7 @@ public class ElevatorSubsystem extends SubsystemBase {
   }
 
 
-  public void goToSource() {
-    pivot_target = PivotTarget.SOURCE;
-    double pivot_angle = pivotTargetToAngle(pivot_target);
-    System.out.println("stow angle target: " + pivot_angle);
-    System.out.println("final voltage: " + giveVoltage(pivot_angle, getCurrentAngle()) + "\n\n");
-    double voltage = giveVoltage(pivot_angle, getCurrentAngle());
-    elevatorMotorLeader.setVoltage(voltage);
-    SmartDashboard.putNumber("getVoltage", voltage);
-    System.out.println("s");
-  }
 
-
-  public void goToAmp() {
-    pivot_target = PivotTarget.AMP;
-    double pivot_angle = pivotTargetToAngle(pivot_target);
-    System.out.println("stow angle target: " + pivot_angle);
-    System.out.println("final voltage: " + giveVoltage(pivot_angle, getCurrentAngle()) + "\n\n");
-    double voltage = giveVoltage(pivot_angle, getCurrentAngle());
-    elevatorMotorLeader.setVoltage(voltage);
-    SmartDashboard.putNumber("getVoltage", voltage);
-    System.out.println("s");
-  }
-
-
-  public void goToStow() {
-    pivot_target = PivotTarget.STOW;
-    double pivot_angle = pivotTargetToAngle(pivot_target);
-    System.out.println("stow angle target: " + pivot_angle);
-   System.out.println("final voltage: " + giveVoltage(pivot_angle, getCurrentAngle()) + "\n\n");
-    double voltage = giveVoltage(pivot_angle, getCurrentAngle());
-   if (getCurrentAngle() > 90 && voltage == Constants.intake.maxPivotVoltage) {
-      elevatorMotorLeader.setVoltage(-Constants.intake.maxPivotVoltage);
-    }
-      else {
-        elevatorMotorLeader.setVoltage(voltage);
-      }   
-    SmartDashboard.putNumber("getVoltage", voltage);
-    System.out.println("s");
-  }
 
 
 
@@ -262,11 +214,10 @@ public class ElevatorSubsystem extends SubsystemBase {
   public void periodic() {
     loadPreferences();
     //This method will be called once per scheduler run
-    SmartDashboard.putNumber("encoder reading", getCurrentAngle());
-    SmartDashboard.putBoolean("atAngleGround", groundAtAngle());
-    SmartDashboard.putBoolean("atAngleAmp", ampAtAngle());
-    SmartDashboard.putBoolean("atAngleSource", sourceAtAngle());
-    SmartDashboard.putBoolean("atAngleStow", stowAtAngle());
+    SmartDashboard.putNumber("encoder reading", elevatorEncoder.get());
+    SmartDashboard.putBoolean("elevatorAtGroundFloor", elevatorAtGroundFloor());
+    SmartDashboard.putBoolean("elevatorAtTopFloor", elevatorAtTopFloor());
+
   }
 }
  

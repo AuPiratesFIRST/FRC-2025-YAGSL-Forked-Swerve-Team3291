@@ -42,7 +42,6 @@ public final class Constants
 
   public static class OperatorConstants
   {
-
     // Joystick Deadband
     public static final double DEADBAND        = 0.1;
     public static final double LEFT_Y_DEADBAND = 0.1;
@@ -50,7 +49,40 @@ public final class Constants
     public static final double TURN_CONSTANT    = 6;
   }
 
-  public static class intake {
+
+  public static class Elevator {
+    public static final double deadband = 5;
+
+    public static final double maxVelocity = 0.3;
+    public static final double maxAcceleration = 0.3;
+    public static final double ks = 0;
+    public static final double kg = 0;
+    public static final double kv = 0;
+    public static final double ka = 0;
+
+    public static class PID {
+      public static final double kp = 0.1;
+      public static final double ki = 0.0;
+      public static final double kd = 0.0;
+    }
+
+    //ids
+    public static final int encoderID = 0; //Changed due to change
+    public static final int motorLeadID = 20;
+    public static final int motorFollowerID = 22;
+    public static final int topLimitSwitchID = 9;
+
+    public static final double encoderOffset = 0;
+
+    //floor pos
+    public static final double groundFloor = 0;//doesn't like 0
+    public static final double topFloor = 3;//needs to be changes
+
+    public static final double maxVoltage = 8;
+  }
+
+
+  public static class Intake {
     public static final double angleDeadband = 5;
 
     public static final double kLauncherSubMinOutput = 0;
@@ -65,10 +97,10 @@ public final class Constants
     public static final double kLauncherSubFF = 0.0002;
 
     public static class intakePID {
-    public static final double kp = 0.1;
-    public static final double ki = 0.0;
-    public static final double kd = 0.0;
-    public static final double kcos = 0.5;
+      public static final double kp = 0.1;
+      public static final double ki = 0.0;
+      public static final double kd = 0.0;
+      public static final double kcos = 0.5;
     }
 
     //ids
